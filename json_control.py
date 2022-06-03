@@ -114,6 +114,7 @@ w_value=[dic for key,dic in copy_work.items()]
 sorted_work=sorted(w_value,key=itemgetter('weight'),reverse=True)
 
 
+#ここから仕事の割り当て
 final_list=[]
 hold_list=[]
 count=0
