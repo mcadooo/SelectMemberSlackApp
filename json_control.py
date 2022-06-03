@@ -6,6 +6,8 @@ Created on Wed Jun  1 17:32:09 2022
 """
 
 import json
+import numpy as np
+from operator import itemgetter
 
 
 #人を追加
@@ -19,8 +21,12 @@ def register_work(i,name,weight,need):
     work_list['work'+str(i)]=add_work
 
 #人を削除
-def delete_person(name):
-    person_list.pop(name)
+def delete_person(p_list,name):
+    p_list.pop(name)
+    
+#人を削除
+def delete_work(w_list,name):
+    w_list.pop(name)
     
 
 # ヒトをJSONファイルへ出力
@@ -49,9 +55,7 @@ def json_work_write(path,totalnum):
 
     return data
 
-#仕事量からメンバーを選択し，出力
-#def select_member():
-    
+
 #追加や削除を行う用の配列
 def copy_array(array):
     copy=array
@@ -59,9 +63,13 @@ def copy_array(array):
     return copy
     
 
+#仕事量からメンバーを選択し，出力
+#def select_member():
+    
+
 #名前探索
 def json_search():
-    personnum=[key for key,dic in person_list.items() if dic['name']=='AA'] 
+    personnum=[key for key,dic in person_list.items() if dic['name']=='Aさん'] 
     #print(personnum)
     
     return personnum
@@ -83,23 +91,73 @@ json_work_read(path_work)
 
 
 #テスト用
-register_person(1,'AA',5,'place')
-register_person(2,'BA',6,'place2')
-register_work(1,'place',50,4)
-register_work(2,'place',50,4)
+register_person(1,'Aさん',5,'pointA')
+register_person(2,'Bさん',6,'pointB')
+register_person(3,'Cさん',9,'pointC')
+register_person(4,'Dさん',2,'pointD')
+register_person(5,'Eさん',2,'pointD')
+register_work(1,'pointA',50,1)
+register_work(2,'pointB',60,1)
+register_work(3,'pointC',20,1)
+register_work(4,'pointD',40,2)
 
 
 copy_person=copy_array(person_list)
 copy_work=copy_array(work_list)
 
 
-delete_person("person1")
+#仕事量順でソート
+p_value=[dic for key,dic in copy_person.items()]
+sorted_person=sorted(p_value,key=itemgetter('exp'))
 
-print(person_list)
+w_value=[dic for key,dic in copy_work.items()]
+sorted_work=sorted(w_value,key=itemgetter('weight'),reverse=True)
 
 
-data1=json_person_write(path_person,totalnum)
-data2=json_work_write(path_work,totalnum)
+final_list=[]
+hold_list=[]
+count=0
 
-print(data1)
-print(data2)
+flag_person=np.zeros(len(sorted_person))
+
+for work in sorted_work:
+    capacity=work['need']
+    
+    for i in range(capacity):
+        hold_list.append(work['name'])
+        
+        for person in sorted_person:
+
+            if((person['history']!=work['name']) and flag_person[count]==0):
+                
+                
+                hold_list.append(person['name'])
+                final_list.append(hold_list)
+                
+                flag_person[count]=1
+                count+=1
+            
+                #hold_list.clear()
+                break
+            
+    
+    
+        # else :
+        #     print('a')
+
+    # final_list.append(hold_list)
+    # hold_list.clear()
+
+
+
+# delete_person(copy_person,"person1")
+# delete_person(copy_work,"work1")
+
+# print(person_list)
+
+
+# data1=json_person_write(path_person,totalnum)
+# data2=json_work_write(path_work,totalnum)
+
+# print(data1)
+# print(data2)
