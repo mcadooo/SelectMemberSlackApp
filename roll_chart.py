@@ -19,68 +19,23 @@ with open('token.json') as f:
 # app = App(token=os.environ.get("SLACK_BOT_TOKEN"))
 app = App(token=jsn["SLACK_BOT_TOKEN"]["token"])
 
-# 'hello' を含むメッセージをリッスンします
-# 指定可能なリスナーのメソッド引数の一覧は以下のモジュールドキュメントを参考にしてください：
-# https://slack.dev/bolt-python/api-docs/slack_bolt/kwargs_injection/args.html
-@app.message("そうじ")
-def message_hello(message, say):
-    # イベントがトリガーされたチャンネルへ say() でメッセージを送信します
-    say(
-        blocks=[
-            {
-                "type": "section",
-                "text": {"type": "mrkdwn", "text": f"ヒトを追加"},
-                "accessory": {
-                    "type": "button",
-                    "text": {"type": "plain_text", "text":"追加"},
-                    "action_id": "button_click_add"
-                }
-            },
-            {
-                "type": "section",
-                "text": {"type": "mrkdwn", "text": f"ヒトを削除"},
-                "accessory": {
-                    "type": "button",
-                    "text": {"type": "plain_text", "text":"削除"},
-                    "action_id": "button_click_del"
-                }
-            }
-        ],
-        text=f"Hey there <@{message['user']}>!"  # 表示されなくなる
-    )
-
 # 仕事場所と担当者の二次元配列からメッセージを作成する関数
 def makeComent(array):
-    blocks=[]
-    # 仕事一つ当たりのblockのテンプレート※うまくいかなかった
-    template={
-                "type": "section",
-                "text": {
-                "type": "plain_text",
-                "text": None,
-                "emoji": True}
-            }
-    
+    # 配列の要素毎に改行を加えて，一つのテキストに変換
     text=""
-    # 始めはBlockを生成して，それを送ろうとしたが，dictのリストがblocksの引数にとれない
-    # 単一のblockとし，textに改行文字を入れて一つのtxtでメッセージを作成
     for a in array:
-        # template["text"]=a[0]+" "+a[1]
-        # blocks.append(template.copy())
-        text+=a[0]+" "+a[1]+"\n"
-    template["text"]=text
-    blocks=template
-    return blocks
+        text+=a[0]+"   "+a[1]+"\n"
+    
+    return text
 
 # 分担表をSlackに送信する関数
 @app.message("分担表")
 def send_roll_chart(message,say):
-    array=[["ゴミ捨て1","川崎"],["ゴミ捨て2","富濱"],["ゴミ捨て3","布野"],["教員室1","増尾"],["教員室2","松前"]]
+    # 掃除当番表の配列を返す関数に変更予定
+    array=[["ゴミ捨て1","AA"],["ゴミ捨て2","AB"],["ゴミ捨て3","AC"],["教員室1","AD"],["教員室2","AE"]]
     
-    # 当初は単一のblockを渡そうとしたがblockの引数にとれなかった
-    # 生成したblockの中から表示したいtxtのみ抽出し，それをblocksのtextのtextに代入
-    block=makeComent(array)
-    tex=block["text"]
+    # 生成された分担の二次元配列を単一テキストに変換
+    tex=makeComent(array)
     
     # イベントがトリガーされたチャンネルへ say() でメッセージを送信します
     say(
@@ -102,6 +57,3 @@ def send_roll_chart(message,say):
 if __name__ == "__main__":
     # SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"]).start()
     SocketModeHandler(app, jsn["SLACK_APP_TOKEN"]["token"]).start()
-
-# array=[["ゴミ捨て1","川崎"],["ゴミ捨て2","富濱"],["ゴミ捨て3","布野"],["教員室1","増尾"],["教員室2","松前"]]
-# blocks=makeBlockComent(array)
