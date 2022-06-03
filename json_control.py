@@ -74,7 +74,30 @@ def json_search():
     
     return personnum
 
+#履歴チェック
+def history_check(sorted_person,sorted_work):
+    person_count = 0
+    history_result = np.zeros(len(sorted_work)) #履歴のworkと今回のworkが被りフラグ
+    for i in range(len(sorted_work)):
+       capacity = sorted_work[i]['need']
+       
+       for j in range(capacity):
+           #履歴のworkと今回のworkが被ったとき
+           if sorted_person[person_count]['history'] == sorted_work[i]['name']:
+               history_result[i] = 1
+           person_count += 1
+    
+           
+           
+    return(history_result)
 
+"""       
+#仕事の順番入れ替え
+def change_work(sorted_work,history_result):
+    for i in range(len(sorted_work)):
+        if history_result[i] == 1:
+            if 
+"""
 
 person_list=dict()
 work_list=dict()
@@ -83,23 +106,36 @@ totalnum=2
 
 person_l=dict()
 
-path_person='C:\\Users\\shimalab\\Desktop\\person.json'
-path_work='C:\\Users\\shimalab\\Desktop\\work.json'
-json_person_read(path_person)
-json_work_read(path_work)
+#path_person='C:\\Users\\shimalab\\Desktop\\person.json'
+#path_work='C:\\Users\\shimalab\\Desktop\\work.json'
+
+#path_person = '.'
+#path_work = '.'
+
+#json_person_read(path_person)
+#json_work_read(path_work)
 
 
 
 #テスト用
-register_person(1,'Aさん',5,'pointA')
-register_person(2,'Bさん',6,'pointB')
-register_person(3,'Cさん',9,'pointC')
-register_person(4,'Dさん',2,'pointD')
-register_person(5,'Eさん',2,'pointD')
-register_work(1,'pointA',50,1)
-register_work(2,'pointB',60,1)
-register_work(3,'pointC',20,1)
-register_work(4,'pointD',40,2)
+register_person(1,'Aさん',5,'pointE')
+register_person(2,'Bさん',6,'pointC')
+register_person(3,'Cさん',9,'pointG')
+register_person(4,'Dさん',4,'pointA')
+register_person(5,'Eさん',2,'pointC')
+register_person(6,'Fさん',3,'pointD')
+register_person(7,'Gさん',8,'pointF')
+register_person(8,'Hさん',6,'pointB')
+register_person(9,'Iさん',7,'pointE')
+register_person(10,'Jさん',1,'pointD')
+register_person(11,'Kさん',5,'pointF')
+register_work(1,'pointA',2,1)
+register_work(2,'pointB',5,1)
+register_work(3,'pointC',3,2)
+register_work(4,'pointD',4,2)
+register_work(5,'pointE',2,2)
+register_work(6,'pointF',1,2)
+register_work(7,'pointG',1,1)
 
 
 copy_person=copy_array(person_list)
@@ -114,7 +150,18 @@ w_value=[dic for key,dic in copy_work.items()]
 sorted_work=sorted(w_value,key=itemgetter('weight'),reverse=True)
 
 
+    
+
+
+
 #ここから仕事の割り当て
+history_result = history_check(sorted_person, sorted_work)
+
+
+
+
+
+"""
 final_list=[]
 hold_list=[]
 count=0
@@ -140,7 +187,7 @@ for work in sorted_work:
             
                 #hold_list.clear()
                 break
-            
+"""            
     
     
         # else :
