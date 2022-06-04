@@ -17,7 +17,7 @@ def registerPerson(i, name, exp, history, person_list):
     name    [str] : 名前,
     exp     [int] : これまでの仕事量,
     history [str] : 前回の仕事,
-    person_list [dic] : 追加先のリスト（辞書型）
+    person_list [dic] : 追加先の辞書リスト（return）
     =============='''
     add_person = {"name": name, "exp": exp, 'history': history}
     person_list['person'+str(i)] = add_person
@@ -31,7 +31,7 @@ def registerWork(i, name, weight, need, work_list):
     name   [str] : 仕事名,
     weight [int] : この仕事の重さ,
     need   [int] : 必要人数,
-    work_list [dic] : 追加先のリスト（辞書型）
+    work_list [dic] : 追加先の辞書リスト（return）
     =============='''
     add_work = {"name": name, "weight": weight, 'need': need}
     work_list['work'+str(i)] = add_work
@@ -39,7 +39,7 @@ def registerWork(i, name, weight, need, work_list):
 
 
 # 人，仕事を削除
-def deletePerson(my_list, name):
+def deleteObject(my_list, name):
     my_list.pop(name)
     return my_list
 
@@ -51,7 +51,7 @@ def jsonWrite(path, my_list):
 
 
 # JSONファイルから読み取り，人，仕事オブジェクトへ
-def jsonRead(path, totalnum):
+def jsonRead(path):
     with open(path, mode='r') as file:
         data = json.load(file)
     return data
@@ -59,19 +59,18 @@ def jsonRead(path, totalnum):
 
 # 追加や削除を行う用の配列
 def copyArray(array):
-    copy=array
+    copy = array
     return copy
 
 
 #仕事量からメンバーを選択し，出力
-#def select_member():
+#def selectMember():
 
 
 #名前探索
-def jsonSearch():
-    personnum=[key for key,dic in person_list.items() if dic['name']=='Aさん']
-    #print(personnum)
-    return personnum
+def nameSearch(name, person_list):
+    person_ids = [key for key, dic in person_list.items() if dic['name'] == name]
+    return person_ids
 
 #履歴チェック
 def historyCheck(sorted_person,sorted_work):
@@ -147,62 +146,7 @@ w_value = [dic for key, dic in copy_work.items()]
 sorted_work = sorted(w_value, key=itemgetter('weight'), reverse=True)
 
 
-
-
-
-
 # ここから仕事の割り当て
 history_result = historyCheck(sorted_person, sorted_work)
 
 
-
-
-
-"""
-final_list=[]
-hold_list=[]
-count=0
-
-flag_person=np.zeros(len(sorted_person))
-
-for work in sorted_work:
-    capacity=work['need']
-
-    for i in range(capacity):
-        hold_list.append(work['name'])
-
-        for person in sorted_person:
-
-            if((person['history']!=work['name']) and flag_person[count]==0):
-
-
-                hold_list.append(person['name'])
-                final_list.append(hold_list)
-
-                flag_person[count]=1
-                count+=1
-
-                #hold_list.clear()
-                break
-"""
-
-
-        # else :
-        #     print('a')
-
-    # final_list.append(hold_list)
-    # hold_list.clear()
-
-
-
-# delete_person(copy_person,"person1")
-# delete_person(copy_work,"work1")
-
-# print(person_list)
-
-
-# data1=json_person_write(path_person,totalnum)
-# data2=json_work_write(path_work,totalnum)
-
-# print(data1)
-# print(data2)
