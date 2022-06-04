@@ -74,7 +74,7 @@ def nameSearch(name, person_list):
 
 #履歴チェック
 #履歴のworkと今回のworkが被った人が1，その他の人が0の配列作成
-def historyCheck(sorted_person,sorted_work):
+def historyCheck(sorted_person, sorted_work):
     person_count = 0 #人番号（人の辞書のkey）
     history_result = np.zeros(len(sorted_person)) #履歴と被ってしまった人が1になる
     
@@ -92,15 +92,34 @@ def historyCheck(sorted_person,sorted_work):
 
 #人の入れ替え
 #key1とkey2の辞書の入れ替え
-def changePerson(sorted_person,key1,key2):
+def changePerson(sorted_person, key1, key2):
     tmp_person = sorted_person[key1]
     sorted_person[key1] = sorted_person[key2]
     sorted_person[key2] = tmp_person
     
     return sorted_person
 
+# 重み更新関数
+def updateWeight(copy_person, copy_weight, role_table):
+    for i in range(len(role_table)):
+        role_person = role_table[i][1]
+        role_work = role_table[i][0]
+    
+        print(role_person)
+
+        now_p = [dic_person for key_person, dic_person in copy_person.items() if dic_person['name'] == role_person]
+        now_w = [dic_work for key_work, dic_work in copy_work.items() if dic_work['name'] == role_work]
+    
+        print(now_p)
+        print(now_w)
+
+        now_p[0]['exp'] += now_w[0]['weight']     #重み更新
+        now_p[0]['history'] + now_w[0]['name']   #history更新
+    
+    return copy_person
+
 #人の並び順変更
-def reSorted(sorted_person,sorted_work):
+def reSorted(sorted_person, sorted_work):
     num_person = len(sorted_person) #合計人数
     
     for i in range(num_person):
@@ -173,12 +192,7 @@ if __name__ == "__main__":
 
     person_l = dict()
 
-    # path_person='C:\\Users\\shimalab\\Desktop\\person.json'
-    # path_work='C:\\Users\\shimalab\\Desktop\\work.json'
-    # path_person = '.'
-    # path_work = '.'
-    # json_person_read(path_person)
-    # json_work_read(path_work)
+
 
     # テスト用
     person_list = registerPerson(1, 'Aさん', 5, 'pointE', person_list)
@@ -217,3 +231,5 @@ if __name__ == "__main__":
     re_sorted_person = reSorted(sorted_person, sorted_work)
 
 
+    # 関数起動部
+    # copy_person=updateWeight(copy_person, copy_work, role_table)
