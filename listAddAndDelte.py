@@ -195,7 +195,7 @@ def actionWorkButtonClick(body, ack, say):
     # アクションを確認したことを即時で応答します
 	ack()
 	select_items=body["actions"][0]["selected_options"]
-	work=[s["text"]["text"] for s in select_items]
+	work=[s["text"]["text"] for s in select_items] # 選択したしごと名の一次元配列
 	text=makeResultMessage(work)
 
     # チャンネルに選択したそうじを投稿(確認用)
@@ -220,7 +220,7 @@ def actionPersonButtonClick(body, ack, say):
     # アクションを確認したことを即時で応答します
 	ack()
 	select_items=body["actions"][0]["selected_options"]
-	person=[s["text"]["text"] for s in select_items]
+	person=[s["text"]["text"] for s in select_items] # 選択したメンバ名の一次元配列
 	text=makeResultMessage(person)
 
     # チャンネルに選択したメンバ名を投稿(確認用)
@@ -242,6 +242,3 @@ def actionPersonButtonClick(body, ack, say):
 # アプリを起動します
 if __name__ == "__main__":
     sm=SocketModeHandler(app, jsn["SLACK_APP_TOKEN"]["token"]).start()
-    work=app.action("multi_work_select-action")(actionWorkButtonClick)
-    print(work)
-    # print(sm)
