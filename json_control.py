@@ -77,6 +77,19 @@ def json_search():
 #履歴チェック
 def history_check(sorted_person,sorted_work):
     person_count = 0
+    history_result = np.zeros(len(sorted_person)) #履歴と被ってしまった人が1になる
+    
+    for i in range(len(sorted_work)):
+        for j in range(sorted_work[i]['need']):
+            
+            #履歴のworkと今回のworkが被ったとき
+            if sorted_person[person_count]['history'] == sorted_work[i]['name']:
+                history_result[person_count] = 1
+            person_count += 1
+    
+    
+    """
+    person_count = 0
     history_result = np.zeros(len(sorted_work)) #履歴のworkと今回のworkが被りフラグ
     for i in range(len(sorted_work)):
        capacity = sorted_work[i]['need']
@@ -86,18 +99,47 @@ def history_check(sorted_person,sorted_work):
            if sorted_person[person_count]['history'] == sorted_work[i]['name']:
                history_result[i] = 1
            person_count += 1
-    
+    """
            
            
     return(history_result)
 
-"""       
-#仕事の順番入れ替え
-def change_work(sorted_work,history_result):
-    for i in range(len(sorted_work)):
+#人の入れ替え
+def change_person(sorted_person,key1,key2):
+    tmp_person = sorted_person[key1]
+    sorted_person[key1] = sorted_person[key2]
+    sorted_person[key2] = tmp_person
+    
+    return sorted_person
+
+    
+
+#人の並び順変更
+def re_sorted_person(sorted_person,sorted_work,history_result):
+    for i in range(len(sorted_person)):
+        history_count = np.count_nonzero(history_result == 1)
+        
+        
+        #履歴フラグが立ってるとき
         if history_result[i] == 1:
-            if 
-"""
+            change_distance = 1 #入れ替え先との距離
+            if i == len(sorted_person) - 1:
+                while()
+                
+                sorted_person = change_person(sorted_person, i, i - change_distance)
+                if np.count_nonzero(history_check(sorted_person,sorted_work) == 1) < history_count:
+                    break
+                else
+                
+            
+            
+            
+            #上の人との入れ替え
+            #change_person(sorted_person, i, i - 1) 
+        
+    return sorted_person
+            
+            
 
 person_list=dict()
 work_list=dict()
@@ -157,7 +199,7 @@ sorted_work=sorted(w_value,key=itemgetter('weight'),reverse=True)
 #ここから仕事の割り当て
 history_result = history_check(sorted_person, sorted_work)
 
-
+re_sorted_person = re_sorted_person(sorted_person,sorted_work,history_result)
 
 
 

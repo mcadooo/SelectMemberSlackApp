@@ -72,28 +72,97 @@ def nameSearch(name, person_list):
     person_ids = [key for key, dic in person_list.items() if dic['name'] == name]
     return person_ids
 
-# 履歴チェック
-def historyCheck(sorted_person, sorted_work):
-    person_count = 0
-    history_result = np.zeros(len(sorted_work))  # 履歴のworkと今回のworkが被りフラグ
+#履歴チェック
+#履歴のworkと今回のworkが被った人が1，その他の人が0の配列作成
+def historyCheck(sorted_person,sorted_work):
+    person_count = 0 #人番号（人の辞書のkey）
+    history_result = np.zeros(len(sorted_person)) #履歴と被ってしまった人が1になる
+    
     for i in range(len(sorted_work)):
-        capacity = sorted_work[i]['need']
-
-        for j in range(capacity):
-            # 履歴のworkと今回のworkが被ったとき
+        #その仕事に必要な人数だけ割り振り
+        for j in range(sorted_work[i]['need']):
+            
+            #履歴のworkと今回のworkが被ったとき
             if sorted_person[person_count]['history'] == sorted_work[i]['name']:
-                history_result[i] = 1
-            person_count += 1
-
+                history_result[person_count] = 1 #フラグを立てる
+            person_count += 1 #次の人へ
+            
     return(history_result)
 
 
-# #仕事の順番入れ替え
-# def change_work(sorted_work,history_result):
-#     for i in range(len(sorted_work)):
-#         if history_result[i] == 1:
-#             if
+#人の入れ替え
+#key1とkey2の辞書の入れ替え
+def changePerson(sorted_person,key1,key2):
+    tmp_person = sorted_person[key1]
+    sorted_person[key1] = sorted_person[key2]
+    sorted_person[key2] = tmp_person
+    
+    return sorted_person
 
+#人の並び順変更
+def reSorted(sorted_person,sorted_work):
+    num_person = len(sorted_person) #合計人数
+    
+    for i in range(num_person):
+        
+        history_result = historyCheck(sorted_person, sorted_work)
+        
+        #履歴被りした人数
+        history_count = np.count_nonzero(history_result == 1)
+        
+        
+        #履歴フラグが立ってるとき
+        if history_result[i] == 1:
+            #最後の人（上にしか人がいない）
+            if i == num_person - 1:
+                #人リストの端から端まで
+                for j in range(num_person - 1):
+                    #下の人との入れ替え
+                    sorted_person = changePerson(sorted_person, i, i - j - 1)
+                    
+                    #入れ替えで履歴被りが減ったとき
+                    if np.count_nonzero(historyCheck(sorted_person,sorted_work) == 1) < history_count:
+                        break
+            
+            #最初の人（下にしか人がいない）
+            elif i == 0:
+                #人リストの端から端まで
+                for j in range(num_person - 1):
+                    #上の人との入れ替え
+                    sorted_person = changePerson(sorted_person, i, i + j + 1)
+                    
+                    #入れ替えで履歴被りが減ったとき
+                    if np.count_nonzero(historyCheck(sorted_person,sorted_work) == 1) < history_count:
+                        break
+            
+            #上下に人がいる人
+            else:
+                change_distance = 1 #入れ替え先との距離
+                while(True):
+                    #下の人との入れ替え可能かどうか
+                    if i + change_distance < num_person:
+                        #下の人との入れ替え
+                        sorted_person = changePerson(sorted_person, i, i + change_distance)
+                        
+                        #入れ替えで履歴被りが減ったとき
+                        if np.count_nonzero(historyCheck(sorted_person,sorted_work) == 1) < history_count:
+                            break
+                    #上の人との入れ替え可能かどうか
+                    elif i - change_distance >= 0:
+                        #上の人との入れ替え
+                        sorted_person = changePerson(sorted_person, i, i - change_distance)
+                        
+                        #入れ替えで履歴被りが減ったとき
+                        if np.count_nonzero(historyCheck(sorted_person,sorted_work) == 1) < history_count:
+                            break
+                        else:
+                            change_distance += 1
+                    #入れ替えがもうできないとき
+                    #探索終了
+                    else:
+                        break
+        
+    return sorted_person
 
 
 if __name__ == "__main__":
@@ -145,6 +214,6 @@ if __name__ == "__main__":
 
 
     # ここから仕事の割り当て
-    history_result = historyCheck(sorted_person, sorted_work)
+    re_sorted_person = reSorted(sorted_person, sorted_work)
 
 
