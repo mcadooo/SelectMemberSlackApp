@@ -297,11 +297,7 @@ def selectAddWork(message,say):
         			"type": "plain_text",
         			"text": text,
         			"emoji": True
-        		},
- 			"label": {
-				"type": "plain_text",
-				"text": "追加するそうじ",
-				"emoji": True}
+        		}
         	}
         ]
         )
@@ -411,11 +407,7 @@ def actionWorkButtonClick(body, ack, say):
 				"type": "plain_text",
 				"text": text,
 				"emoji": True
-			},
- 			"label": {
-				"type": "plain_text",
-				"text": "削除するそうじ",
-				"emoji": True}
+			}
 		}
 	]
 	)
@@ -439,11 +431,7 @@ def actionPersonButtonClick(body, ack, say):
 				"type": "plain_text",
 				"text": text,
 				"emoji": True
-			},
- 			"label": {
-				"type": "plain_text",
-				"text": "欠席者",
-				"emoji": True}
+			}
 		}
 	]
 	)
