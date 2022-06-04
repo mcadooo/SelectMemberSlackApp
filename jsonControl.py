@@ -62,6 +62,20 @@ def copyArray(array):
     copy = array
     return copy
 
+#　人数と仕事の数が一致するように予備を追加
+def addJobless(person_list,work_list):
+    work_num = 0 #仕事に必要な合計人数
+    w_value = [dic for key, dic in work_list.items()]
+    
+    for work in w_value:
+        work_num += work["need"]
+    
+    add_num = len(person_list) - work_num #余った人数
+    if add_num > 0:
+        work_list = registerWork(len(work_list) + 1, "jobless", 0, add_num, work_list)
+        
+    return work_list
+        
 
 # 仕事量からメンバーを選択し，出力
 # def selectMember():
@@ -210,10 +224,13 @@ if __name__ == "__main__":
     work_list = registerWork(2, 'pointB', 5, 1, work_list)
     work_list = registerWork(3, 'pointC', 3, 2, work_list)
     work_list = registerWork(4, 'pointD', 4, 2, work_list)
-    work_list = registerWork(5, 'pointE', 2, 2, work_list)
+    work_list = registerWork(5, 'pointE', 2, 1, work_list)
     work_list = registerWork(6, 'pointF', 1, 2, work_list)
     work_list = registerWork(7, 'pointG', 1, 1, work_list)
 
+
+    #予備追加
+    work_list = addJobless(person_list, work_list)
 
     copy_person = copyArray(person_list)
     copy_work = copyArray(work_list)
@@ -225,6 +242,8 @@ if __name__ == "__main__":
 
     w_value = [dic for key, dic in copy_work.items()]
     sorted_work = sorted(w_value, key=itemgetter('weight'), reverse=True)
+    
+   
 
 
     # ここから仕事の割り当て
