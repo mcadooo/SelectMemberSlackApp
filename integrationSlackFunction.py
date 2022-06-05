@@ -52,9 +52,8 @@ def makeWorkComment(work_list):
 
     return text
 
-# 仕事と担当者の二次元配列から一方の要素のみの選択肢を作成する関数
-# num:0=仕事，1＝担当者
-def makeOptions(array,num):
+# 欠席者の選択肢を作成する関数
+def makePersonOptions(array):
     options=[]
     for i in range(len(array)):
         template={"text": {
@@ -64,7 +63,23 @@ def makeOptions(array,num):
 					},
 				"value": None}
         template["value"]="value-"+str(i)
-        template["text"]["text"]=array[i][num]
+        template["text"]["text"]=str(array["name"][i])
+        options.append(template.copy())
+
+    return options
+
+# 欠席者の選択肢を作成する関数
+def makeWorkOptions(array):
+    options=[]
+    for i in range(len(array)):
+        template={"text": {
+					"type": "plain_text",
+					"text": "*this is plain_text text*",
+					"emoji": True
+					},
+				"value": None}
+        template["value"]="value-"+str(i)
+        template["text"]["text"]=str(array["name"][i])
         options.append(template.copy())
 
     return options
@@ -331,23 +346,23 @@ def updateWorkList(message,say):
 # 欠席者の選択肢をSlackに送信する関数
 @app.message("欠席者")
 def selectDeletePerson(message,say):
-    base_path="./log/"
-    if not os.path.isdir(base_path):
-        os.makedirs(base_path)
+    base_path="./personlab.json"
+    # if not os.path.isdir(base_path):
+    #     os.makedirs(base_path)
     # jsonから読み込み
-    person_list = sm.jsonRead('personlab.json')
-    work_list = sm.jsonRead('worklab.json')
+    person_list = pd.read_json('personlab.json').T
+    # work_list = sm.jsonRead('worklab.json')
     # 掃除当番表の配列を返す関数
-    role_table, work_list = sm.selectMember(person_list, work_list)
-    role_table = pd.DataFrame(np.array(role_table), columns=["掃除","担当者"])
-    role_table = role_table.apply(alignStringLength)
-    role_table.to_csv(base_path+'role_tabel.csv')  # 分担表保存
-    # jsonへ書き出し
-    sm.jsonWrite(base_path+'person_copy.json', person_list)
-    sm.jsonWrite(base_path+'work_copy.json', work_list)
+    # role_table, work_list = sm.selectMember(person_list, work_list)
+    # role_table = pd.DataFrame(np.array(role_table), columns=["掃除","担当者"])
+    # role_table = role_table.apply(alignStringLength)
+    # role_table.to_csv(base_path+'role_tabel.csv')  # 分担表保存
+    # # jsonへ書き出し
+    # sm.jsonWrite(base_path+'person_copy.json', person_list)
+    # sm.jsonWrite(base_path+'work_copy.json', work_list)
 
     # 辞書型の選択肢一覧（options）を作成
-    person=makeOptions(role_table, 1)
+    person=makePersonOptions(person_list)
 
     # イベントがトリガーされたチャンネルへ say() で複数選択肢を送信します
     say(
@@ -367,12 +382,7 @@ def selectDeletePerson(message,say):
 				},
 				"options": person,
 				"action_id": "multi_person_select-action"
- 			},
-             "label": {
-				"type": "plain_text",
-				"text": "欠席者",
-				"emoji": True
-			}
+ 			}
 		}
  	],
         text=f"Hey there <@{message['user']}>!"  # 表示されなくなる
@@ -381,23 +391,24 @@ def selectDeletePerson(message,say):
 # 削除する仕事の選択しをSlackに送信する関数
 @app.message("そうじ削除")
 def selectDeleteWork(message,say):
-    base_path='./log/'
-    if not os.path.isdir(base_path):
-        os.makedirs(base_path)
-    # jsonから読み込み
-    person_list = sm.jsonRead('personlab.json')
-    work_list = sm.jsonRead('worklab.json')
+    # base_path='./log/'
+    # if not os.path.isdir(base_path):
+    #     os.makedirs(base_path)
+    # # jsonから読み込み
+    # person_list = sm.jsonRead('personlab.json')
+    work_list = pd.read_json('worklab.json').T
+    print(work_list)
     # 掃除当番表の配列を返す関数
-    role_table, work_list = sm.selectMember(person_list, work_list)
-    role_table = pd.DataFrame(np.array(role_table), columns=["掃除","担当者"])
-    role_table = role_table.apply(alignStringLength)
-    role_table.to_csv(base_path+'role_tabel.csv')  # 分担表保存
-    # jsonへ書き出し
-    sm.jsonWrite(base_path+'person_copy.json', person_list)
-    sm.jsonWrite(base_path+'work_copy.json', work_list)
+    # role_table, work_list = sm.selectMember(person_list, work_list)
+    # role_table = pd.DataFrame(np.array(role_table), columns=["掃除","担当者"])
+    # role_table = role_table.apply(alignStringLength)
+    # role_table.to_csv(base_path+'role_tabel.csv')  # 分担表保存
+    # # jsonへ書き出し
+    # sm.jsonWrite(base_path+'person_copy.json', person_list)
+    # sm.jsonWrite(base_path+'work_copy.json', work_list)
 
     # 辞書型の選択肢一覧（options）を作成
-    work=makeOptions(role_table, 0)
+    work=makeWorkOptions(work_list)
 
     # イベントがトリガーされたチャンネルへ say() で複数選択肢を送信します
     say(
