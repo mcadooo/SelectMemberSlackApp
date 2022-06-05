@@ -120,26 +120,27 @@ def alignStringLength(strings):
 @app.message("分担表")
 def send_roll_chart(message,say):
     # jsonから読み込み
+    print("a")
     person_list = sm.jsonRead('./log/person_copy.json')
     work_list = sm.jsonRead('./log/work_copy.json')
-
+    print("a")
     # 掃除当番表の配列を返す関数
     role_table, work_list = sm.selectMember(person_list, work_list)
     sm.jsonWrite('./log/work_copy.json', work_list)  # jsonへ書き出し
-
+    print("a")
     # 重み更新して保存
     person_list = sm.updateWeight(person_list, work_list, role_table)
     sm.jsonWrite('personlab.json', person_list)
     sm.jsonWrite('./log/person_copy.json', person_list)
-
+    print("a")
     # 二次元リストならpandasに変換してるけど，最終的にDataFrame型になってればおけ
     role_table = pd.DataFrame(np.array(role_table), columns=["掃除","担当者"])
     role_table = role_table.apply(alignStringLength)
     role_table.to_csv('./log/role_tabel.csv')  # 分担表保存
-
+    print("a")
     # 生成された分担のDataFrameを単一テキストに変換
     tex=makeChart(role_table)
-
+    print("a")
     # イベントがトリガーされたチャンネルへ say() でメッセージを送信します
     say(
         blocks=[
@@ -154,6 +155,7 @@ def send_roll_chart(message,say):
             ],
         text=f"Hey there <@{message['user']}>!"  # 表示されなくなる
         )
+    print("a")
 
 # 追加したい仕事の選択肢をSlackに送信する関数
 @app.message("しごと追加")
