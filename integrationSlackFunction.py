@@ -68,7 +68,7 @@ def makePersonOptions(array):
 
     return options
 
-# 欠席者の選択肢を作成する関数
+# そうじ削除の選択肢を作成する関数
 def makeWorkOptions(array):
     options=[]
     for i in range(len(array)):
@@ -122,22 +122,23 @@ def send_roll_chart(message,say):
     # jsonから読み込み
     person_list = sm.jsonRead('./log/person_copy.json')
     work_list = sm.jsonRead('./log/work_copy.json')
+
     # 掃除当番表の配列を返す関数
     role_table, work_list = sm.selectMember(person_list, work_list)
     sm.jsonWrite('./log/work_copy.json', work_list)  # jsonへ書き出し
 
+    # 重み更新して保存
+    person_list = sm.updateWeight(person_list, work_list, role_table)
+    sm.jsonWrite('personlab.json', person_list)
+    sm.jsonWrite('./log/person_copy.json', person_list)
+
     # 二次元リストならpandasに変換してるけど，最終的にDataFrame型になってればおけ
-    # array=[["ゴミ捨て1","AA"],["ゴミ捨て2","AB"],["ゴミ捨て3","AC"],["教員室1","AD"],["教員室2","AE"]]
     role_table = pd.DataFrame(np.array(role_table), columns=["掃除","担当者"])
     role_table = role_table.apply(alignStringLength)
     role_table.to_csv('./log/role_tabel.csv')  # 分担表保存
 
     # 生成された分担のDataFrameを単一テキストに変換
     tex=makeChart(role_table)
-
-    # 重み更新して保存
-    sm.updateWeight(person_list, work_list, role_table)
-    sm.jsonWrite('personlab.json', person_list)
 
     # イベントがトリガーされたチャンネルへ say() でメッセージを送信します
     say(
@@ -347,19 +348,14 @@ def updateWorkList(message,say):
 @app.message("欠席者")
 def selectDeletePerson(message,say):
     base_path="./personlab.json"
-    # if not os.path.isdir(base_path):
-    #     os.makedirs(base_path)
-    # jsonから読み込み
     person_list = pd.read_json('personlab.json').T
-    # work_list = sm.jsonRead('worklab.json')
-    # 掃除当番表の配列を返す関数
-    # role_table, work_list = sm.selectMember(person_list, work_list)
-    # role_table = pd.DataFrame(np.array(role_table), columns=["掃除","担当者"])
-    # role_table = role_table.apply(alignStringLength)
-    # role_table.to_csv(base_path+'role_tabel.csv')  # 分担表保存
-    # # jsonへ書き出し
-    # sm.jsonWrite(base_path+'person_copy.json', person_list)
-    # sm.jsonWrite(base_path+'work_copy.json', work_list)
+
+    # jsonから読み込み
+    person_copy = sm.jsonRead('personlab.json')
+    work_copy = sm.jsonRead('worklab.json')
+    # jsonへ書き出し
+    sm.jsonWrite('./log/person_copy.json', person_copy)
+    sm.jsonWrite('./log/work_copy.json', work_copy)
 
     # 辞書型の選択肢一覧（options）を作成
     person=makePersonOptions(person_list)
@@ -391,21 +387,15 @@ def selectDeletePerson(message,say):
 # 削除する仕事の選択しをSlackに送信する関数
 @app.message("そうじ削除")
 def selectDeleteWork(message,say):
-    # base_path='./log/'
-    # if not os.path.isdir(base_path):
-    #     os.makedirs(base_path)
-    # # jsonから読み込み
-    # person_list = sm.jsonRead('personlab.json')
     work_list = pd.read_json('worklab.json').T
-    print(work_list)
-    # 掃除当番表の配列を返す関数
-    # role_table, work_list = sm.selectMember(person_list, work_list)
-    # role_table = pd.DataFrame(np.array(role_table), columns=["掃除","担当者"])
-    # role_table = role_table.apply(alignStringLength)
-    # role_table.to_csv(base_path+'role_tabel.csv')  # 分担表保存
-    # # jsonへ書き出し
-    # sm.jsonWrite(base_path+'person_copy.json', person_list)
-    # sm.jsonWrite(base_path+'work_copy.json', work_list)
+
+    # jsonから読み込み
+    person_copy = sm.jsonRead('personlab.json')
+    work_copy = sm.jsonRead('worklab.json')
+
+    # jsonへ書き出し
+    sm.jsonWrite('./log/person_copy.json', person_copy)
+    sm.jsonWrite('./log/work_copy.json', work_copy)
 
     # 辞書型の選択肢一覧（options）を作成
     work=makeWorkOptions(work_list)
@@ -445,17 +435,11 @@ def actionInputWorkSelect(body, ack, say):
     text=makeResultMessage(work)
 
     # jsonから読み込み
-    person_list = sm.jsonRead('./log/person_copy.json')
     work_list = sm.jsonRead('./log/work_copy.json')
     # リストから削除
     for name in work:
-        work_list = sm.deleteObject(work_list, name)
-
-    # 掃除当番表の配列を返す関数
-    role_table, work_list = sm.selectMember(person_list, work_list)
-    role_table = pd.DataFrame(np.array(role_table), columns=["掃除","担当者"])
-    role_table = role_table.apply(alignStringLength)
-    role_table.to_csv('./log/role_tabel.csv')  # 分担表保存
+        workId = sm.nameSearch(name, work_list)
+        work_list = sm.deleteObject(work_list, workId)
     # jsonへ書き出し
     sm.jsonWrite('./log/work_copy.json', work_list)
 
@@ -485,16 +469,10 @@ def actionInputPersonSelect(body, ack, say):
 
     # jsonから読み込み
     person_list = sm.jsonRead('./log/person_copy.json')
-    work_list = sm.jsonRead('./log/work_copy.json')
     # リストから削除
     for name in person:
+        workId = sm.nameSearch(name, person_list)
         person_list = sm.deleteObject(person_list, name)
-
-    # 掃除当番表の配列を返す関数
-    role_table, work_list = sm.selectMember(person_list, work_list)
-    role_table = pd.DataFrame(np.array(role_table), columns=["掃除","担当者"])
-    role_table = role_table.apply(alignStringLength)
-    role_table.to_csv('./log/role_tabel.csv')  # 分担表保存
     # jsonへ書き出し
     sm.jsonWrite('./log/person_copy.json', person_list)
 
