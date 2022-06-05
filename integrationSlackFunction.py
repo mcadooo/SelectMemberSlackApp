@@ -6,6 +6,8 @@ Created on Thu Jun  2 23:25:52 2022
 """
 
 import os
+import numpy as np
+import pandas as pd
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 import json
@@ -22,8 +24,9 @@ app = App(token=jsn["SLACK_BOT_TOKEN"]["token"])
 def makeChart(array):
     # 配列の要素毎に改行を加えて，一つのテキストに変換
     text=""
-    for a in array:
-        text+=a[0]+"   "+a[1]+"\n"
+    col=array.columns.values
+    for i in range(len(array)):
+        text+=array[col[0]][i]+"   "+array[col[1]][i]+"\n"
     
     return text
 
@@ -80,13 +83,28 @@ def makeWorkWeightOptions(minimum,maxim):
         
     return options
 
+# 分担表の各項目の文字列をそろえる関数(引数はpandas)
+def alignStringLength(strings):
+    length=max(list(map(len,strings)))
+    
+    def addSpace(string):
+        string+="　"*(length-len(string))
+        return string
+    
+    strings=pd.Series(map(addSpace, strings),name=strings.name)
+    
+    return strings
+
 # 分担表をSlackに送信する関数
 @app.message("分担表")
 def send_roll_chart(message,say):
     # 掃除当番表の配列を返す関数に変更予定
+    # 二次元リストならpandasに変換してるけど，最終的にDataFrame型になってればおけ
     array=[["ゴミ捨て1","AA"],["ゴミ捨て2","AB"],["ゴミ捨て3","AC"],["教員室1","AD"],["教員室2","AE"]]
+    array=pd.DataFrame(np.array(array),columns=["掃除","担当者"])
+    array=array.apply(alignStringLength)
     
-    # 生成された分担の二次元配列を単一テキストに変換
+    # 生成された分担のDataFrameを単一テキストに変換
     tex=makeChart(array)
     
     # イベントがトリガーされたチャンネルへ say() でメッセージを送信します
