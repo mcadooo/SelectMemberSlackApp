@@ -48,7 +48,7 @@ def makeWorkComment(work_list):
     for w in work_list:
         print(w)
         w=work_list[w]
-        text+=w["name"]+"  "+w["weight"]+"  "+w["need"]+"\n"
+        text+=w["name"]+"  "+str(w["weight"])+"  "+str(w["need"])+"\n"
 
     return text
 
@@ -120,27 +120,27 @@ def alignStringLength(strings):
 @app.message("分担表")
 def send_roll_chart(message,say):
     # jsonから読み込み
-    print("a")
+    print("分担表")
     person_list = sm.jsonRead('./log/person_copy.json')
     work_list = sm.jsonRead('./log/work_copy.json')
-    print("a")
+
     # 掃除当番表の配列を返す関数
     role_table, work_list = sm.selectMember(person_list, work_list)
     sm.jsonWrite('./log/work_copy.json', work_list)  # jsonへ書き出し
-    print("a")
+
     # 重み更新して保存
     person_list = sm.updateWeight(person_list, work_list, role_table)
     sm.jsonWrite('personlab.json', person_list)
     sm.jsonWrite('./log/person_copy.json', person_list)
-    print("a")
+
     # 二次元リストならpandasに変換してるけど，最終的にDataFrame型になってればおけ
     role_table = pd.DataFrame(np.array(role_table), columns=["掃除","担当者"])
     role_table = role_table.apply(alignStringLength)
     role_table.to_csv('./log/role_tabel.csv')  # 分担表保存
-    print("a")
+
     # 生成された分担のDataFrameを単一テキストに変換
     tex=makeChart(role_table)
-    print("a")
+
     # イベントがトリガーされたチャンネルへ say() でメッセージを送信します
     say(
         blocks=[
@@ -158,7 +158,7 @@ def send_roll_chart(message,say):
     print("a")
 
 # 追加したい仕事の選択肢をSlackに送信する関数
-@app.message("しごと追加")
+@app.message("そうじ追加")
 def selectAddWork(message,say):
     # 辞書型の選択肢一覧（options）を作成
     weight=makeWorkWeightOptions(1, 5)
@@ -270,10 +270,8 @@ def selectAddWork(message,say):
     sm.jsonWrite(path, work_list)  # jsonファイルへの書き出し
     work_list = sm.jsonRead(path)  # jsonファイルへの読み込み
 
-    work_num=0 #work_listの長さの最大値を取得
-
     template={"name":"","weight":0,"need":0}
-    work_list["work"+str(work_num+1)]=template
+    work_list["work"]=template
 
     sm.jsonWrite(path, work_list)  # jsonファイルへの書き出し
 
@@ -284,7 +282,7 @@ def selectAddWork(message,say):
 
         work_list = sm.jsonRead(path)  # jsonファイルへの読み込み
 
-        work_list["work"+str(work_num+1)]["name"]=input_item
+        work_list["work"]["name"]=input_item
 
         sm.jsonWrite(path, work_list)  # jsonファイルへの書き出し
 
@@ -295,7 +293,7 @@ def selectAddWork(message,say):
 
         work_list = sm.jsonRead(path)  # jsonファイルへの読み込み
 
-        work_list["work"+str(work_num+1)]["weight"]=select_items
+        work_list["work"]["weight"]=int(select_items)
 
         sm.jsonWrite(path, work_list)  # jsonファイルへの書き出し
 
@@ -306,7 +304,7 @@ def selectAddWork(message,say):
 
         work_list = sm.jsonRead(path)  # jsonファイルへの読み込み
 
-        work_list["work"+str(work_num+1)]["need"]=select_items
+        work_list["work"]["need"]=int(select_items)
 
         sm.jsonWrite(path, work_list)  # jsonファイルへの書き出し
 
@@ -333,18 +331,19 @@ def selectAddWork(message,say):
         ]
         )
 
-@app.action("update_work_list")
-def updateWorkList(message,say):
-    path_work_list="./log/work_copy.json" # 当日の仕事リストのパス(場所とファイル名はしらないので要変更)
-    path_temp_work="./log/temp_work.json" # 一次的に追加したい仕事のリストのパス
-    work_list=dict()
+    @app.action("update_work_list")
+    def updateWorkList(message,say):
+        path_work_list="./log/work_copy.json" # 当日の仕事リストのパス(場所とファイル名はしらないので要変更)
+        path_temp_work="./log/temp_work.json" # 一次的に追加したい仕事のリストのパス
+        work_list=dict()
 
-    work_list = sm.jsonRead(path_work_list)  # jsonファイルへの読み込み
-    temp_work = sm.jsonRead(path_temp_work)  # jsonファイルへの読み込み
-    add_work = temp_work.value()
+        work_list = sm.jsonRead(path_work_list)  # jsonファイルへの読み込み
+        temp_work = sm.jsonRead(path_temp_work)  # jsonファイルへの読み込み
+        add_work = temp_work['work']
+        print(add_work)
 
-    sm.registerWork(add_work['name'], add_work['weight'], add_work['need'], work_list)
-    sm.jsonWrite(path_work_list, work_list)  # jsonファイルへの書き出し
+        sm.registerWork(add_work['name'], add_work['weight'], add_work['need'], work_list)
+        sm.jsonWrite(path_work_list, work_list)  # jsonファイルへの書き出し
 
 # 欠席者の選択肢をSlackに送信する関数
 @app.message("欠席者")
@@ -473,8 +472,8 @@ def actionInputPersonSelect(body, ack, say):
     person_list = sm.jsonRead('./log/person_copy.json')
     # リストから削除
     for name in person:
-        workId = sm.nameSearch(name, person_list)
-        person_list = sm.deleteObject(person_list, name)
+        personId = sm.nameSearch(name, person_list)
+        person_list = sm.deleteObject(person_list, personId)
     # jsonへ書き出し
     sm.jsonWrite('./log/person_copy.json', person_list)
 
