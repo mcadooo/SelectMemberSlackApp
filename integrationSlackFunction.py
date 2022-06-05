@@ -83,14 +83,18 @@ def makeWorkWeightOptions(minimum,maxim):
         
     return options
 
-# 分担表の各項目の文字列をそろえる関数(引数はpandas)
+# 分担表の各項目の文字列長をそろえる関数(引数はpandas)
 def alignStringLength(strings):
-    length=max(list(map(len,strings)))
+    strings=pd.Series(map(str, strings),name=strings.name) # 渡された配列の中身をすべてstr型に変換
+    length=max(list(map(len,strings))) # 配列の中で最大の文字列長を取得
     
+    # すべての文字列を最大長に合わせるため末尾にスペースを追加
     def addSpace(string):
+        string=str(string)
         string+="　"*(length-len(string))
         return string
     
+    # スペースの追加をSeries型の各要素に実行※名前を指定しないと属性情報が消失
     strings=pd.Series(map(addSpace, strings),name=strings.name)
     
     return strings
@@ -121,6 +125,7 @@ def send_roll_chart(message,say):
             ],
         text=f"Hey there <@{message['user']}>!"  # 表示されなくなる
         )
+
 # 追加したい仕事の選択肢をSlackに送信する関数
 @app.message("しごと追加")
 def selectAddWork(message,say):
@@ -129,7 +134,6 @@ def selectAddWork(message,say):
     need=makeWorkWeightOptions(1, 20)
     
     # イベントがトリガーされたチャンネルへ say() で複数選択肢を送信します
-    
     # 追加する仕事名の入力フォーム送信
     say(
         blocks=[
@@ -153,22 +157,22 @@ def selectAddWork(message,say):
  			],
         text=f"Hey there <@{message['user']}>!"  # 表示されなくなる
         )
-	
+ 	
     # 追加する仕事の重みを入力
     say(
             blocks=[
     		{
-    			"type": "actions",
-    			"elements": [
+     			"type": "actions",
+     			"elements": [
     				{
-    					"type": "static_select",
-    					"placeholder": {
+     					"type": "static_select",
+     					"placeholder": {
     						"type": "plain_text",
     						"text": "Select an weight",
     						"emoji": True
-    					},
-    					"options": weight,
-    					"action_id": "select_weight"
+     					},
+     					"options": weight,
+     					"action_id": "select_weight"
     				}]
             }],
             text=f"Hey there <@{message['user']}>!"  # 表示されなくなる
@@ -178,17 +182,17 @@ def selectAddWork(message,say):
     say(
             blocks=[
     		{
-    			"type": "actions",
-    			"elements": [
+     			"type": "actions",
+     			"elements": [
     				{
-    					"type": "static_select",
-    					"placeholder": {
+     					"type": "static_select",
+     					"placeholder": {
     						"type": "plain_text",
     						"text": "Select an need",
     						"emoji": True
-    					},
-    					"options": need,
-    					"action_id": "select_need"
+     					},
+     					"options": need,
+     					"action_id": "select_need"
     				}]
             }],
             text=f"Hey there <@{message['user']}>!"  # 表示されなくなる
@@ -223,7 +227,6 @@ def selectAddWork(message,say):
                 ]
             }
         ]
-
     )
     
     base_path="./log/"
@@ -362,12 +365,17 @@ def selectDeletePerson(message,say):
 				"type": "multi_static_select",
 				"placeholder": {
  					"type": "plain_text",
- 					"text": "Select options",
+ 					"text": "Select absentees",
  					"emoji": True
 				},
 				"options": person,
 				"action_id": "multi_person_select-action"
- 			}
+ 			},
+             "label": {
+				"type": "plain_text",
+				"text": "欠席者",
+				"emoji": True
+			}
 		}
  	],
         text=f"Hey there <@{message['user']}>!"  # 表示されなくなる
@@ -395,7 +403,7 @@ def selectDeleteWork(message,say):
 				"type": "multi_static_select",
 				"placeholder": {
  					"type": "plain_text",
- 					"text": "Select options",
+ 					"text": "Select clean",
  					"emoji": True
 				},
 				"options": work,
@@ -409,7 +417,7 @@ def selectDeleteWork(message,say):
 # マルチ選択の選択したそうじ項目を取得する関数
 # 選択した項目を削除する関数に渡す
 @app.action("multi_work_select-action")
-def actionWorkButtonClick(body, ack, say):
+def actionInputWorkSelect(body, ack, say):
     # アクションを確認したことを即時で応答します
 	ack()
 	select_items=body["actions"][0]["selected_options"]
@@ -433,13 +441,13 @@ def actionWorkButtonClick(body, ack, say):
 # マルチ選択の選択した欠席者項目を取得する関数
 # 選択した項目を削除する関数に渡す
 @app.action("multi_person_select-action")
-def actionPersonButtonClick(body, ack, say):
+def actionInputPersonSelect(body, ack, say):
     # アクションを確認したことを即時で応答します
 	ack()
 	select_items=body["actions"][0]["selected_options"]
 	person=[s["text"]["text"] for s in select_items] # 選択したメンバ名の一次元配列
 	text=makeResultMessage(person)
-
+    
     # チャンネルに選択したメンバ名を投稿(確認用)
 	say(
 		blocks=[
