@@ -491,6 +491,80 @@ def actionInputPersonSelect(body, ack, say):
 	]
 	)
 
+def makeMemberListComment(member_list):
+    text=""
+    col=member_list.columns.values
+    
+    for i in range(len(member_list)):
+        for c in col:
+            text+=member_list[c][i]+" "
+        text+="\n"
+    
+    return text
+
+# 仕事のpandasを引数とし，各項目を一つのテキストに統合
+def makeWorkListComment(work_list):
+    text=""
+    col=work_list.columns.values
+    
+    for i in range(len(work_list)):
+        for c in col:
+            text+=work_list[c][i]+"   "
+        text+="\n"
+    
+    return text
+
+# メンバリストを表示するコマンド
+@app.message("メンバー一覧")
+def displayMemberList(message,say):
+    # メンバのjsonファイルのパス
+    path_member_list="./personlab.json"
+    
+    member=pd.read_json(path_member_list).T
+    member=member.apply(alignStringLength) # 渡された配列の中身をすべてstr型に変換
+
+    text=makeMemberListComment(member)
+    
+    # チャンネルに選択したメンバ名を投稿(確認用)
+    say(
+   		blocks=[
+   		{
+   			"type": "section",
+   			"text": {
+   				"type": "plain_text",
+   				"text": text,
+   				"emoji": True
+   			}
+   		}
+   	]
+   	)
+    
+# メンバリストを表示するコマンド
+@app.message("そうじ一覧")
+def displayWorkList(message,say):
+    # メンバのjsonファイルのパス
+    path_work_list="./worklab.json"
+    
+    work=pd.read_json(path_work_list).T
+    # work=work.applymap(str) # 渡された配列の中身をすべてstr型に変換
+    work=work.apply(alignStringLength)
+
+    text=makeWorkListComment(work)
+    
+    # チャンネルに選択したメンバ名を投稿(確認用)
+    say(
+   		blocks=[
+   		{
+   			"type": "section",
+   			"text": {
+   				"type": "plain_text",
+   				"text": text,
+   				"emoji": True
+   			}
+   		}
+   	]
+   	)
+
 # アプリを起動します
 if __name__ == "__main__":
     # SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"]).start()
