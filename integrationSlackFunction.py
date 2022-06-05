@@ -8,6 +8,7 @@ Created on Thu Jun  2 23:25:52 2022
 import os
 import numpy as np
 import pandas as pd
+import unicodedata
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 import json
@@ -83,15 +84,24 @@ def makeWorkWeightOptions(minimum,maxim):
         
     return options
 
+# 全角を2文字，半角を1文字としてカウントする関数
+def get_east_asian_width_count(text):
+    count = 0
+    for c in text:
+        if unicodedata.east_asian_width(c) in 'FWA':
+            count += 2
+        else:
+            count += 1
+    return count
+
 # 分担表の各項目の文字列長をそろえる関数(引数はpandas)
 def alignStringLength(strings):
     strings=pd.Series(map(str, strings),name=strings.name) # 渡された配列の中身をすべてstr型に変換
-    length=max(list(map(len,strings))) # 配列の中で最大の文字列長を取得
+    length=max(list(map(get_east_asian_width_count,strings))) # 配列の中で最大の文字列長を取得
     
     # すべての文字列を最大長に合わせるため末尾にスペースを追加
     def addSpace(string):
-        string=str(string)
-        string+="　"*(length-len(string))
+        string+="  "*(length-get_east_asian_width_count(string))
         return string
     
     # スペースの追加をSeries型の各要素に実行※名前を指定しないと属性情報が消失
@@ -461,6 +471,81 @@ def actionInputPersonSelect(body, ack, say):
 		}
 	]
 	)
+
+
+def makeMemberListComment(member_list):
+    text=""
+    col=member_list.columns.values
+    
+    for i in range(len(member_list)):
+        for c in col:
+            text+=member_list[c][i]+" "
+        text+="\n"
+    
+    return text
+
+# 仕事のpandasを引数とし，各項目を一つのテキストに統合
+def makeWorkListComment(work_list):
+    text=""
+    col=work_list.columns.values
+    
+    for i in range(len(work_list)):
+        for c in col:
+            text+=work_list[c][i]+"   "
+        text+="\n"
+    
+    return text
+
+# メンバリストを表示するコマンド
+@app.message("メンバー一覧")
+def displayMemberList(message,say):
+    # メンバのjsonファイルのパス
+    path_member_list="./personlab.json"
+    
+    member=pd.read_json(path_member_list).T
+    member=member.apply(alignStringLength) # 渡された配列の中身をすべてstr型に変換
+
+    text=makeMemberListComment(member)
+    
+    # チャンネルに選択したメンバ名を投稿(確認用)
+    say(
+   		blocks=[
+   		{
+   			"type": "section",
+   			"text": {
+   				"type": "plain_text",
+   				"text": text,
+   				"emoji": True
+   			}
+   		}
+   	]
+   	)
+    
+# メンバリストを表示するコマンド
+@app.message("そうじ一覧")
+def displayWorkList(message,say):
+    # メンバのjsonファイルのパス
+    path_work_list="./worklab.json"
+    
+    work=pd.read_json(path_work_list).T
+    # work=work.applymap(str) # 渡された配列の中身をすべてstr型に変換
+    work=work.apply(alignStringLength)
+
+    text=makeWorkListComment(work)
+    
+    # チャンネルに選択したメンバ名を投稿(確認用)
+    say(
+   		blocks=[
+   		{
+   			"type": "section",
+   			"text": {
+   				"type": "plain_text",
+   				"text": text,
+   				"emoji": True
+   			}
+   		}
+   	]
+   	)
 
 # アプリを起動します
 if __name__ == "__main__":
