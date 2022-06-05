@@ -235,7 +235,6 @@ def selectMember(person_list, work_list):
 
     # 人を仕事量順でソート(少ない順)
     p_value = [dic for key, dic in copy_person.items()]
-    p_key = [key for key, dic in copy_person.items()]
     sorted_person = sorted(p_value, key=itemgetter('exp'))
 
     # 仕事を仕事量順でソート(重い順)
@@ -249,6 +248,7 @@ def selectMember(person_list, work_list):
     print(role_table)
 
     # 関数起動部
+    p_key = [nameSearch(person['name'], copy_person) for person in sorted_person]
     copy_person = dict(zip(p_key, sorted_person))
     copy_person = updateWeight(copy_person, copy_work, role_table)
 
