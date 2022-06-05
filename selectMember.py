@@ -62,13 +62,13 @@ def nameSearch(name, person_list):
 
 # 人，仕事をJSONファイルへ出力
 def jsonWrite(path, my_list):
-    with open(path, mode='w') as file:
+    with open(path, mode='w', encoding="utf-8") as file:
         json.dump(my_list, file, ensure_ascii=False, indent=2)
 
 
 # JSONファイルから読み取り，人，仕事オブジェクトへ
 def jsonRead(path):
-    with open(path, mode='r') as file:
+    with open(path, mode='r', encoding="utf-8") as file:
         data = json.load(file)
     return data
 
@@ -203,29 +203,24 @@ def reSorted(sorted_person, sorted_work):
 
 # 重み更新関数
 def updateWeight(copy_person, copy_work, role_table):
-    print(copy_person)
-    print(copy_work)
     for i in range(len(role_table)):
         role_person = role_table[i][1]
         role_work = role_table[i][0]
 
-        print(role_person)
         now_p = [dic_person for key_person, dic_person in copy_person.items() if dic_person['name'] == role_person]
         now_w = [dic_work for key_work, dic_work in copy_work.items() if dic_work['name'] == role_work]
-        print(now_p)
-        print(now_w)
 
         now_p[0]['exp'] += now_w[0]['weight']   # 重み更新
         now_p[0]['history'] = now_w[0]['name']  # history更新
-        print(now_p)
-
     return copy_person
 
+# 分担割り振り用
 def selectMember(person_list, work_list):
-    '''===人数と仕事の数が一致するように予備を追加===
-    person_list  [dic] : 今日の仕事できる人の辞書リスト(return exp,history更新後),
-    work_list    [dic] : 今日の仕事場所の辞書リスト,
-    role_table   [list(str)] : 分担表(return)
+    '''===分担割り振り用===
+    person_list  [dic] : 人の辞書リスト,
+    work_list    [dic] : 仕事場所の辞書リスト,
+    role_table   [list(str)] : 分担表(return),
+    copy_person  [dic] : exp,history更新後の人の辞書リスト(return)
     ======================'''
     copy_person = copyArray(person_list)
     copy_work = copyArray(work_list)
@@ -258,54 +253,32 @@ def selectMember(person_list, work_list):
 if __name__ == "__main__":
     person_list = dict()
     work_list = dict()
-    history = []
-    totalnum = 2
 
-    person_l = dict()
+    # # テスト用
+    # person_list = registerPerson('Aさん', 5, 'pointE', person_list)
+    # person_list = registerPerson('Bさん', 6, 'pointC', person_list)
+    # person_list = registerPerson('Cさん', 9, 'pointG', person_list)
+    # person_list = registerPerson('Dさん', 4, 'pointA', person_list)
+    # person_list = registerPerson('Eさん', 2, 'pointC', person_list)
+    # person_list = registerPerson('Fさん', 3, 'pointD', person_list)
+    # person_list = registerPerson('Gさん', 8, 'pointF', person_list)
+    # person_list = registerPerson('Hさん', 6, 'pointB', person_list)
+    # person_list = registerPerson('Iさん', 7, 'pointE', person_list)
+    # person_list = registerPerson('Jさん', 1, 'pointD', person_list)
+    # person_list = registerPerson('Kさん', 5, 'pointF', person_list)
+    # work_list = registerWork('pointA', 2, 1, work_list)
+    # work_list = registerWork('pointB', 5, 1, work_list)
+    # work_list = registerWork('pointC', 3, 2, work_list)
+    # work_list = registerWork('pointD', 4, 2, work_list)
+    # work_list = registerWork('pointE', 2, 1, work_list)
+    # work_list = registerWork('pointF', 1, 2, work_list)
+    # work_list = registerWork('pointG', 1, 1, work_list)
 
-
-    # テスト用
-    person_list = registerPerson('Aさん', 5, 'pointE', person_list)
-    person_list = registerPerson('Bさん', 6, 'pointC', person_list)
-    person_list = registerPerson('Cさん', 9, 'pointG', person_list)
-    person_list = registerPerson('Dさん', 4, 'pointA', person_list)
-    person_list = registerPerson('Eさん', 2, 'pointC', person_list)
-    person_list = registerPerson('Fさん', 3, 'pointD', person_list)
-    person_list = registerPerson('Gさん', 8, 'pointF', person_list)
-    person_list = registerPerson('Hさん', 6, 'pointB', person_list)
-    person_list = registerPerson('Iさん', 7, 'pointE', person_list)
-    person_list = registerPerson('Jさん', 1, 'pointD', person_list)
-    person_list = registerPerson('Kさん', 5, 'pointF', person_list)
-    work_list = registerWork('pointA', 2, 1, work_list)
-    work_list = registerWork('pointB', 5, 1, work_list)
-    work_list = registerWork('pointC', 3, 2, work_list)
-    work_list = registerWork('pointD', 4, 2, work_list)
-    work_list = registerWork('pointE', 2, 1, work_list)
-    work_list = registerWork('pointF', 1, 2, work_list)
-    work_list = registerWork('pointG', 1, 1, work_list)
+    person_list = jsonRead('personlab.json')
+    work_list = jsonRead('worklab.json')
 
     role, person = selectMember(person_list, work_list)
-
-    #予備追加
-    work_list = addJobless(person_list, work_list)
-
-    copy_person = copyArray(person_list)
-    copy_work = copyArray(work_list)
+    print(role)
+    print(person)
 
 
-    # 仕事量順でソート
-    p_value = [dic for key, dic in copy_person.items()]
-    sorted_person = sorted(p_value, key=itemgetter('exp'))
-
-    w_value = [dic for key, dic in copy_work.items()]
-    sorted_work = sorted(w_value, key=itemgetter('weight'), reverse=True)
-
-
-
-
-    # ここから仕事の割り当て
-    re_sorted_person = reSorted(sorted_person, sorted_work)
-
-
-    # 関数起動部
-    # copy_person=updateWeight(copy_person, copy_work, role_table)
