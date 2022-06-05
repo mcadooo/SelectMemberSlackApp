@@ -203,10 +203,16 @@ def reSorted(sorted_person, sorted_work):
 
 # 重み更新関数
 def updateWeight(copy_person, copy_work, role_table):
+    '''===重み更新関数===
+    copy_person  [dic] : 更新したい人の辞書リスト(return exp,histry更新後),
+    copy_work    [dic] : 仕事場所の辞書リスト,
+    role_table   [list(str)] : 分担表
+    ======================'''
     for i in range(len(role_table)):
         role_person = role_table[i][1]
         role_work = role_table[i][0]
 
+        # 参照で渡している
         now_p = [dic_person for key_person, dic_person in copy_person.items() if dic_person['name'] == role_person]
         now_w = [dic_work for key_work, dic_work in copy_work.items() if dic_work['name'] == role_work]
 
@@ -219,8 +225,7 @@ def selectMember(person_list, work_list):
     '''===分担割り振り用===
     person_list  [dic] : 人の辞書リスト,
     work_list    [dic] : 仕事場所の辞書リスト,
-    role_table   [list(str)] : 分担表(return),
-    copy_person  [dic] : exp,history更新後の人の辞書リスト(return)
+    role_table   [list(str)] : 分担表(return)
     ======================'''
     copy_person = copyArray(person_list)
     copy_work = copyArray(work_list)
@@ -241,13 +246,7 @@ def selectMember(person_list, work_list):
     sorted_work_list = [sort_w['name'] for sort_w in sorted_work for _ in range(sort_w['need'])]
     role_table = [[sorted_w, sorted_p['name']] for sorted_p, sorted_w in zip(sorted_person, sorted_work_list)]
     print(role_table)
-
-    # 関数起動部
-    p_key = [nameSearch(person['name'], copy_person) for person in sorted_person]
-    copy_person = dict(zip(p_key, sorted_person))
-    copy_person = updateWeight(copy_person, copy_work, role_table)
-
-    return role_table, copy_person
+    return role_table, copy_work
 
 
 if __name__ == "__main__":
@@ -277,8 +276,10 @@ if __name__ == "__main__":
     person_list = jsonRead('personlab.json')
     work_list = jsonRead('worklab.json')
 
-    role, person = selectMember(person_list, work_list)
+    role, work = selectMember(person_list, work_list)
     print(role)
+
+    person = updateWeight(person_list, work, role)
     print(person)
 
 
