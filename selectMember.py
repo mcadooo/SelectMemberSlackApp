@@ -174,7 +174,8 @@ def reSorted(sorted_person, sorted_work):
             # 上下に人がいる人
             else:
                 change_distance = 1  # 入れ替え先との距離
-                while(True):
+                itr = 0
+                while(itr<10000):
                     # 下の人との入れ替え可能かどうか
                     if i + change_distance < num_person:
                         # 下の人との入れ替え
@@ -197,6 +198,7 @@ def reSorted(sorted_person, sorted_work):
                     # 探索終了
                     else:
                         break
+                    itr += 1
 
     return sorted_person
 
@@ -229,7 +231,7 @@ def selectMember(person_list, work_list):
     ======================'''
     copy_person = copyArray(person_list)
     copy_work = copyArray(work_list)
-
+    print('Select Member')
     #予備追加
     copy_work = addJobless(copy_person, copy_work)
 
@@ -241,8 +243,10 @@ def selectMember(person_list, work_list):
     w_value = [dic for key, dic in copy_work.items()]
     sorted_work = sorted(w_value, key=itemgetter('weight'), reverse=True)
 
+
     # ここから仕事の割り当て
     sorted_person = reSorted(sorted_person, sorted_work)
+    print('resort')
     sorted_work_list = [sort_w['name'] for sort_w in sorted_work for _ in range(sort_w['need'])]
     role_table = [[sorted_w, sorted_p['name']] for sorted_p, sorted_w in zip(sorted_person, sorted_work_list)]
     print(role_table)
